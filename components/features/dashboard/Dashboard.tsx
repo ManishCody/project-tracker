@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { DashboardHeader } from "./dashboard-header"
-import { TaskStats } from "./task-stats"
-import { GanttChartEnhanced } from "./gantt-chart-enhanced"
-import { TaskForm } from "./task-form"
-import { TaskList } from "./task-list"
-import { AnalyticsPanel } from "./analytics-panel"
+import { DashboardHeader } from "@/components/layout/DashboardHeader"
+import { TaskStats } from "./TaskStats"
+import { GanttChart } from "@/components/features/tasks/GanttChart"
+import { TaskForm } from "@/components/features/tasks/TaskForm"
+import { TaskList } from "@/components/features/tasks/TaskList"
+import { AnalyticsPanel } from "@/components/features/analytics/AnalyticsPanel"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 
@@ -166,17 +166,14 @@ export function Dashboard() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Header */}
       <DashboardHeader
         projects={DEMO_PROJECTS}
         selectedProject={selectedProject}
         onProjectChange={setSelectedProject}
       />
 
-      {/* Main Content */}
       <div className="flex-1 overflow-auto">
         <div className="max-w-7xl mx-auto p-6 space-y-8">
-          {/* Title and Action */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">{currentProject?.name}</h1>
@@ -188,22 +185,17 @@ export function Dashboard() {
             </Button>
           </div>
 
-          {/* Stats Overview */}
           <TaskStats stats={stats} />
 
-          {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Gantt Chart Section - Takes 2 columns */}
             <div className="lg:col-span-2 space-y-4">
               <h2 className="text-xl font-semibold">Project Timeline</h2>
-              <GanttChartEnhanced tasks={filteredTasks} />
+              <GanttChart tasks={filteredTasks} />
             </div>
 
-            {/* Analytics Panel - Takes 1 column */}
             <AnalyticsPanel tasks={tasks} selectedProject={selectedProject} />
           </div>
 
-          {/* Task List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Tasks</h2>
@@ -220,7 +212,6 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Task Form Modal */}
       {showTaskForm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <TaskForm

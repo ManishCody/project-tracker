@@ -24,7 +24,6 @@ export function DashboardHeader({ projects, selectedProject, onProjectChange }: 
             <h1 className="text-xl font-bold">Project Tracker</h1>
           </div>
 
-          {/* Project Selector */}
           <div className="flex gap-2">
             {projects.map((project) => (
               <button
