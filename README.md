@@ -1,6 +1,6 @@
 # Task Tracker
 
-A Next.js-based task tracking application with analytics and Gantt chart visualization.
+A Next.js-based task tracking application with REST API, MongoDB, analytics, and Gantt chart visualization.
 
 ## Folder Structure
 
@@ -21,15 +21,20 @@ my-app/
 │   └── ui/                 # Reusable UI components
 │
 ├── lib/                     # Utility functions
-│   └── utils.ts            # Helper utilities
+│   ├── utils.ts            # Helper utilities
+│   └── mongodb.ts          # MongoDB connection
+│
+├── models/                  # Database models
+│   └── Task.ts             # Task model with validation
 │
 ├── public/                  # Static assets
 │
 ├── node_modules/           # Dependencies
 │
 ├── Dockerfile              # Docker configuration
-├── docker-compose.yml      # Docker Compose setup
+├── docker-compose.yml      # Docker Compose with MongoDB
 ├── .dockerignore           # Docker ignore file
+├── env.example             # Environment variables example
 ├── package.json            # Project dependencies
 ├── next.config.ts          # Next.js configuration
 └── tsconfig.json           # TypeScript configuration
@@ -55,8 +60,14 @@ docker run -p 3000:3000 mandy45/task-tracker:latest
 ## Running with Docker
 
 ### Using Docker Compose (Recommended)
+This will start both the app and MongoDB:
 ```bash
 docker compose up
+```
+
+To seed the database with demo data:
+```bash
+docker compose exec task-tracker npm run seed
 ```
 
 ### Using Docker Run
@@ -70,6 +81,34 @@ docker run -p 3000:3000 task-tracker
 
 Access the application at http://localhost:3000
 
+## REST API Endpoints
+
+### Tasks
+- `GET /api/tasks` - Get all tasks (supports ?status=pending&priority=high)
+- `POST /api/tasks` - Create a new task
+- `GET /api/tasks/[id]` - Get a single task
+- `PUT /api/tasks/[id]` - Update a task
+- `DELETE /api/tasks/[id]` - Delete a task
+
+### Example Request
+```bash
+# Get all tasks
+curl http://localhost:3000/api/tasks
+
+# Create a task
+curl -X POST http://localhost:3000/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "New Task",
+    "description": "Task description here",
+    "status": "pending",
+    "priority": "high",
+    "startDate": "2024-01-01",
+    "endDate": "2024-01-10",
+    "assignee": "John Doe"
+  }'
+```
+
 ## Development Setup
 
 ```bash
@@ -80,4 +119,11 @@ npm run dev
 npm run build
 
 npm start
+```
+
+## Environment Variables
+
+Create a `.env.local` file with:
+```
+MONGODB_URI=mongodb://localhost:27017/tasktracker
 ```

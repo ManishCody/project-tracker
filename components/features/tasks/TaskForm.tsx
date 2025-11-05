@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
+import { toast } from "sonner"
 
 interface Project {
   id: string
@@ -16,39 +17,65 @@ interface Project {
 interface TaskFormProps {
   projects?: Project[]
   defaultProject?: string
+  task?: Task // For edit mode
   onSubmit: (task: Omit<Task, "id">) => void
   onCancel: () => void
 }
 
-export function TaskForm({ projects = [], defaultProject = "", onSubmit, onCancel }: TaskFormProps) {
-  const [title, setTitle] = useState("")
-  const [assignee, setAssignee] = useState("")
-  const [project, setProject] = useState(defaultProject)
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
-  const [status, setStatus] = useState<Task["status"]>("not-started")
-  const [progress, setProgress] = useState(0)
+export function TaskForm({ projects = [], defaultProject = "", task, onSubmit, onCancel }: TaskFormProps) {
+  const isEditMode = !!task
+  const [title, setTitle] = useState(task?.title || "")
+  const [assignee, setAssignee] = useState(task?.assignee || "")
+  const [project, setProject] = useState(task?.project || defaultProject)
+  const [startDate, setStartDate] = useState(task?.startDate ? task.startDate.split('T')[0] : "")
+  const [endDate, setEndDate] = useState(task?.endDate ? task.endDate.split('T')[0] : "")
+  const [status, setStatus] = useState<Task["status"]>(task?.status || "in-progress")
+  const [progress, setProgress] = useState(task?.progress || 0)
+  const [priority, setPriority] = useState<"low" | "medium" | "high">(task?.priority || "medium")
+  const [description, setDescription] = useState(task?.description || "")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
     if (!title || !startDate || !endDate || !project) {
-      alert("Please fill in all required fields")
+      toast.error("Please fill in all required fields")
       return
     }
-    onSubmit({
-      title,
-      project,
-      assignee,
-      startDate,
-      endDate,
-      status,
-      progress,
-    })
+    
+    if (!description || description.trim().length < 10) {
+      toast.error("Description must be at least 10 characters")
+      return
+    }
+    
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    if (!(end > start)) {
+      toast.error("End date must be after start date")
+      return
+    }
+    
+    setIsSubmitting(true)
+    try {
+      await onSubmit({
+        title,
+        description,
+        project,
+        assignee,
+        startDate,
+        endDate,
+        status,
+        ...(priority && { priority }),
+        progress,
+      } as Omit<Task, "id">)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <Card className="w-full max-w-md p-6 shadow-lg">
-      <h2 className="text-2xl font-bold mb-6">Create New Task</h2>
+      <h2 className="text-2xl font-bold mb-6">{isEditMode ? "Edit Task" : "Create New Task"}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label htmlFor="title">Task Title *</Label>
@@ -80,6 +107,17 @@ export function TaskForm({ projects = [], defaultProject = "", onSubmit, onCance
         </div>
 
         <div>
+          <Label htmlFor="description">Description *</Label>
+          <Input
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter task description (min 10 characters)"
+            required
+          />
+        </div>
+
+        <div>
           <Label htmlFor="assignee">Assignee</Label>
           <Input
             id="assignee"
@@ -107,37 +145,67 @@ export function TaskForm({ projects = [], defaultProject = "", onSubmit, onCance
           </div>
         </div>
 
-        <div>
-          <Label htmlFor="status">Status</Label>
-          <select
-            id="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as Task["status"])}
-            className="w-full px-3 py-2 border rounded-md bg-input text-foreground border-border"
-          >
-            <option value="not-started">Not Started</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="status">Status</Label>
+            <select
+              id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as Task["status"])}
+              className="w-full px-3 py-2 border rounded-md bg-input text-foreground border-border"
+            >
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+
+          <div>
+            <Label htmlFor="priority">Priority</Label>
+            <select
+              id="priority"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as "low" | "medium" | "high")}
+              className="w-full px-3 py-2 border rounded-md bg-input text-foreground border-border"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
         </div>
 
         <div>
-          <Label htmlFor="progress">Progress (%)</Label>
+          <Label htmlFor="progress">Progress (%) - Max 100</Label>
           <Input
             id="progress"
             type="number"
             min="0"
             max="100"
             value={progress}
-            onChange={(e) => setProgress(Number.parseInt(e.target.value) || 0)}
+            onChange={(e) => {
+              const val = e.target.value
+              // Remove leading zeros and limit to 100
+              const numVal = val === '' ? 0 : Math.min(100, Math.max(0, parseInt(val, 10)))
+              setProgress(isNaN(numVal) ? 0 : numVal)
+            }}
+            onBlur={(e) => {
+              // Ensure value is valid on blur
+              const val = parseInt(e.target.value, 10)
+              if (isNaN(val) || val < 0) setProgress(0)
+              else if (val > 100) setProgress(100)
+            }}
+            placeholder="0-100"
           />
         </div>
 
         <div className="flex gap-2 justify-end pt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button type="submit">Create Task</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update Task" : "Create Task")}
+          </Button>
         </div>
       </form>
     </Card>
