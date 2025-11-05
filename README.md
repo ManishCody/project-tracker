@@ -1,37 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Task Tracker
 
-## Getting Started
+A Next.js-based task tracking application with analytics and Gantt chart visualization.
 
-First, run the development server:
+## Folder Structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+my-app/
+├── app/                      # Next.js app directory
+│   ├── layout.tsx           # Root layout component
+│   ├── page.tsx             # Home page
+│   ├── globals.css          # Global styles
+│   └── favicon.ico          # App icon
+│
+├── components/              # React components
+│   ├── features/           # Feature-specific components
+│   │   ├── analytics/      # Analytics related components
+│   │   ├── dashboard/      # Dashboard components
+│   │   └── tasks/          # Task management components
+│   ├── layout/             # Layout components
+│   └── ui/                 # Reusable UI components
+│
+├── lib/                     # Utility functions
+│   └── utils.ts            # Helper utilities
+│
+├── public/                  # Static assets
+│
+├── node_modules/           # Dependencies
+│
+├── Dockerfile              # Docker configuration
+├── docker-compose.yml      # Docker Compose setup
+├── .dockerignore           # Docker ignore file
+├── package.json            # Project dependencies
+├── next.config.ts          # Next.js configuration
+└── tsconfig.json           # TypeScript configuration
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Docker Hub
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Docker Image:** `mandy45/task-tracker:latest`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Docker Hub URL:** https://hub.docker.com/r/mandy45/task-tracker
 
-## Learn More
+### Pull and Run from Docker Hub
+```bash
+docker pull mandy45/task-tracker:latest
+docker run -p 3000:3000 mandy45/task-tracker:latest
+```
 
-To learn more about Next.js, take a look at the following resources:
+Or run directly (will pull automatically):
+```bash
+docker run -p 3000:3000 mandy45/task-tracker:latest
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Running with Docker
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Using Docker Compose (Recommended)
+```bash
+docker compose up
+```
 
-## Deploy on Vercel
+### Using Docker Run
+```bash
+# Build the image
+docker build -t task-tracker .
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Run the container
+docker run -p 3000:3000 task-tracker
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# project-tracker
+Access the application at http://localhost:3000
+
+## Development Setup
+
+```bash
+npm install
+
+npm run dev
+
+npm run build
+
+npm start
+```
