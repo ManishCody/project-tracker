@@ -1,12 +1,36 @@
 version: '3.8'
 
 services:
+  mongodb:
+    image: mongo:7.0
+    container_name: task-tracker-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=tasktracker
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/tasktracker --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   task-tracker:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: task-tracker-app
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/tasktracker
+    depends_on:
+      mongodb:
+        condition: service_healthy
     restart: unless-stopped
+
+volumes:
+  mongodb_data:

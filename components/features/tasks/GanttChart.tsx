@@ -13,7 +13,8 @@ interface Task {
   assignee: string
   startDate: string
   endDate: string
-  status: "not-started" | "in-progress" | "completed"
+  status: "pending" | "in-progress" | "completed"
+  priority?: "low" | "medium" | "high"
   progress: number
 }
 
@@ -151,7 +152,12 @@ export function GanttChart({ tasks }: GanttChartProps) {
       </div>
 
       <Card className="overflow-hidden border border-border bg-white">
-        <div ref={scrollContainerRef} className="overflow-x-auto" onWheel={handleWheel}>
+        <div 
+          ref={scrollContainerRef} 
+          className="overflow-auto" 
+          onWheel={handleWheel}
+          style={{ maxHeight: '400px', height: '400px' }}
+        >
           <div className="min-w-max p-6">
             <div className="flex gap-2 mb-6">
               <div className="w-56 shrink-0" />

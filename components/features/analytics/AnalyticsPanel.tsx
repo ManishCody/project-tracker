@@ -6,9 +6,10 @@ import { DoughnutChart } from "./chart/DoughnutChart"
 
 interface Task {
   id: string
-  status: "not-started" | "in-progress" | "completed"
+  status: "pending" | "in-progress" | "completed"
   project: string
   progress: number
+  priority?: "low" | "medium" | "high"
 }
 
 interface AnalyticsPanelProps {
@@ -17,16 +18,19 @@ interface AnalyticsPanelProps {
 }
 
 export function AnalyticsPanel({ tasks, selectedProject }: AnalyticsPanelProps) {
-  const projectTasks = tasks.filter((t) => t.project === selectedProject)
+  // If "all" is selected, use all tasks, otherwise filter by project
+  const projectTasks = selectedProject === "all" 
+    ? tasks 
+    : tasks.filter((t) => t.project === selectedProject)
 
   const statusBreakdown = useMemo(() => {
     const completed = projectTasks.filter((t) => t.status === "completed").length
     const inProgress = projectTasks.filter((t) => t.status === "in-progress").length
-    const notStarted = projectTasks.filter((t) => t.status === "not-started").length
+    const pending = projectTasks.filter((t) => t.status === "pending").length
 
     return {
-      labels: ["Completed", "In Progress", "Not Started"],
-      data: [completed, inProgress, notStarted],
+      labels: ["Completed", "In Progress", "Pending"],
+      data: [completed, inProgress, pending],
     }
   }, [projectTasks])
 

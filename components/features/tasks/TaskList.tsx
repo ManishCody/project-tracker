@@ -6,22 +6,16 @@ import { Edit2, Trash2, CheckCircle2, Circle, AlertCircle, Save } from "lucide-r
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-
-interface Task {
-  id: string
-  title: string
-  assignee: string
-  status: "not-started" | "in-progress" | "completed"
-  progress: number
-}
+import type { Task } from "@/components/features/dashboard/Dashboard"
 
 interface TaskListProps {
   tasks: Task[]
   onUpdate: (taskId: string, updates: Partial<Task>) => void
   onDelete: (taskId: string) => void
+  onEdit?: (task: Task) => void
 }
 
-export function TaskList({ tasks, onUpdate, onDelete }: TaskListProps) {
+export function TaskList({ tasks, onUpdate, onDelete, onEdit }: TaskListProps) {
   const [editingAssignee, setEditingAssignee] = useState<string | null>(null)
   const [editingValue, setEditingValue] = useState("")
 
@@ -43,12 +37,12 @@ export function TaskList({ tasks, onUpdate, onDelete }: TaskListProps) {
       case "in-progress":
         return "In Progress"
       default:
-        return "Not Started"
+        return "Pending"
     }
   }
 
   const cycleStatus = (currentStatus: Task["status"]) => {
-    const statuses: Task["status"][] = ["not-started", "in-progress", "completed"]
+    const statuses: Task["status"][] = ["pending", "in-progress", "completed"]
     const currentIndex = statuses.indexOf(currentStatus)
     return statuses[(currentIndex + 1) % statuses.length]
   }
@@ -97,9 +91,11 @@ export function TaskList({ tasks, onUpdate, onDelete }: TaskListProps) {
             </div>
 
             <div className="flex gap-2 shrink-0">
-              <Button size="sm" variant="ghost" className="hover:bg-gray-100">
-                <Edit2 className="w-4 h-4 text-gray-600" />
-              </Button>
+              {onEdit && (
+                <Button size="sm" variant="ghost" onClick={() => onEdit(task)} className="hover:bg-gray-100">
+                  <Edit2 className="w-4 h-4 text-gray-600" />
+                </Button>
+              )}
               <Button size="sm" variant="ghost" onClick={() => onDelete(task.id)} className="hover:bg-gray-100">
                 <Trash2 className="w-4 h-4 text-red-500" />
               </Button>
