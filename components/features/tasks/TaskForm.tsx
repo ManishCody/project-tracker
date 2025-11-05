@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import type { Task } from "@/components/features/dashboard/Dashboard" 
+import type { Task } from "@/types/task"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,7 +18,7 @@ interface TaskFormProps {
   projects?: Project[]
   defaultProject?: string
   task?: Task // For edit mode
-  onSubmit: (task: Omit<Task, "id">) => void
+  onSubmit: (task: Omit<Task, "_id" | "createdAt" | "updatedAt">) => Promise<void> | void
   onCancel: () => void
 }
 
@@ -27,8 +27,16 @@ export function TaskForm({ projects = [], defaultProject = "", task, onSubmit, o
   const [title, setTitle] = useState(task?.title || "")
   const [assignee, setAssignee] = useState(task?.assignee || "")
   const [project, setProject] = useState(task?.project || defaultProject)
-  const [startDate, setStartDate] = useState(task?.startDate ? task.startDate.split('T')[0] : "")
-  const [endDate, setEndDate] = useState(task?.endDate ? task.endDate.split('T')[0] : "")
+  
+  // Helper function to format date for input[type="date"]
+  const formatDateForInput = (date: string | Date | undefined): string => {
+    if (!date) return ''
+    const d = typeof date === 'string' ? new Date(date) : date
+    return d.toISOString().split('T')[0]
+  }
+
+  const [startDate, setStartDate] = useState(() => formatDateForInput(task?.startDate))
+  const [endDate, setEndDate] = useState(() => formatDateForInput(task?.endDate))
   const [status, setStatus] = useState<Task["status"]>(task?.status || "in-progress")
   const [progress, setProgress] = useState(task?.progress || 0)
   const [priority, setPriority] = useState<"low" | "medium" | "high">(task?.priority || "medium")
@@ -185,12 +193,10 @@ export function TaskForm({ projects = [], defaultProject = "", task, onSubmit, o
             value={progress}
             onChange={(e) => {
               const val = e.target.value
-              // Remove leading zeros and limit to 100
               const numVal = val === '' ? 0 : Math.min(100, Math.max(0, parseInt(val, 10)))
               setProgress(isNaN(numVal) ? 0 : numVal)
             }}
             onBlur={(e) => {
-              // Ensure value is valid on blur
               const val = parseInt(e.target.value, 10)
               if (isNaN(val) || val < 0) setProgress(0)
               else if (val > 100) setProgress(100)
