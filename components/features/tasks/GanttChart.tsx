@@ -6,20 +6,10 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ChevronRight, ZoomIn, ZoomOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-interface Task {
-  id: string
-  title: string
-  assignee: string
-  startDate: string
-  endDate: string
-  status: "pending" | "in-progress" | "completed"
-  priority?: "low" | "medium" | "high"
-  progress: number
-}
+import { Task } from "@/types/task"
 
 interface GanttChartProps {
-  tasks: Task[]
+  tasks: Array<Omit<Task, 'id'> & { id: string }> // Ensure id is always present
 }
 
 export function GanttChart({ tasks }: GanttChartProps) {
@@ -55,13 +45,13 @@ export function GanttChart({ tasks }: GanttChartProps) {
     return startMonth === endMonth ? startMonth : `${startMonth} - ${endMonth}`
   }, [startDate, endDate])
 
-  const getDayPosition = (date: string) => {
-    const taskDate = new Date(date)
+  const getDayPosition = (dateStr: string | Date) => {
+    const taskDate = typeof dateStr === 'string' ? new Date(dateStr) : dateStr
     const days = Math.floor((taskDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
     return Math.max(0, days)
   }
 
-  const getDayWidth = (startStr: string, endStr: string) => {
+  const getDayWidth = (startStr: string | Date, endStr: string | Date) => {
     const start = getDayPosition(startStr)
     const end = getDayPosition(endStr)
     return Math.max(1, end - start + 1)

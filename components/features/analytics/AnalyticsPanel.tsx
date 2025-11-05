@@ -4,13 +4,7 @@ import { useMemo } from "react"
 import { Card } from "@/components/ui/card"
 import { DoughnutChart } from "./chart/DoughnutChart"
 
-interface Task {
-  id: string
-  status: "pending" | "in-progress" | "completed"
-  project: string
-  progress: number
-  priority?: "low" | "medium" | "high"
-}
+import { Task } from "@/types/task"
 
 interface AnalyticsPanelProps {
   tasks: Task[]
@@ -18,7 +12,6 @@ interface AnalyticsPanelProps {
 }
 
 export function AnalyticsPanel({ tasks, selectedProject }: AnalyticsPanelProps) {
-  // If "all" is selected, use all tasks, otherwise filter by project
   const projectTasks = selectedProject === "all" 
     ? tasks 
     : tasks.filter((t) => t.project === selectedProject)
@@ -50,12 +43,14 @@ export function AnalyticsPanel({ tasks, selectedProject }: AnalyticsPanelProps) 
           </div>
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground">On Track</span>
-            <span className="font-medium text-green-500">{projectTasks.filter((t) => t.progress >= 50).length}</span>
+            <span className="font-medium text-green-500">
+              {projectTasks.filter((t) => (t.progress || 0) >= 50).length}
+            </span>
           </div>
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground">At Risk</span>
             <span className="font-medium text-orange-500">
-              {projectTasks.filter((t) => t.progress < 50 && t.status !== "completed").length}
+              {projectTasks.filter((t) => (t.progress || 0) < 50 && t.status !== "completed").length}
             </span>
           </div>
         </div>
